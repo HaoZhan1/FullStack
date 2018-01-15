@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {Problem} from '../../models/problem.model';
 import {DataService} from '../../services/data.service';
+import {Subscription} from "rxjs/Subscription";
 
 @Component({
   selector: 'app-problem-list',
@@ -8,13 +9,19 @@ import {DataService} from '../../services/data.service';
   styleUrls: ['./problem-list.component.css']
 })
 export class ProblemListComponent implements OnInit {
-  problems: Problem[]
+  problems: Problem[];
+  subscriptionProblems: Subscription;
   constructor(private dataService: DataService) { }
 
   ngOnInit() {
     this.getProblems();
   }
+  ngOnDestory() {
+    this.subscriptionProblems.unsubscribe();
+  }
   getProblems(): void {
-    this.problems = this.dataService.getProblems();
+   // this.problems = this.dataService.getProblems();
+    this.subscriptionProblems = this.dataService.getProblems()
+      .subscribe(problems => this.problems = problems);
   }
 }
