@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import  {CollaborationService} from "../../services/collaboration.service";
 import {ActivatedRoute, Params} from "@angular/router";
+import {DataService} from "../../services/data.service";
 
 declare const ace:any;
 @Component({
@@ -13,8 +14,9 @@ export class EditorComponent implements OnInit {
   languages: string[] = ['Java', 'Python'];
   language: string = 'Java';
   editor: any;
+  output: string = '';
   defaultContent = {
-    'Java': `public class Solution{
+    'Java': `public class Example{
       public static void main(String[] args){
         // Type your code here
       }
@@ -24,7 +26,8 @@ export class EditorComponent implements OnInit {
       # Write your code here`
   }
   constructor(private collaboration: CollaborationService,
-              private  route: ActivatedRoute) { }
+              private  route: ActivatedRoute,
+              private dataService: DataService) { }
 
   ngOnInit() {
     this.route.params.subscribe(params => {
@@ -62,9 +65,17 @@ export class EditorComponent implements OnInit {
     this.language = language;
     this.resetEditor();
   }
+  //once submit execute the code and return the result
   submit(): void {
     const userCode = this.editor.getValue();
-    console.log(userCode);
+    const data = {
+      userCodes : userCode,
+      language: this.language
+    }
+    this.dataService.result(data)
+      .then(res => {
+        this.output = res.text;
+      });
   }
 
 

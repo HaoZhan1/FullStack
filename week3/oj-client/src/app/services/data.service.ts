@@ -44,6 +44,17 @@ export class DataService {
       })
       .catch(this.handleError);
   }
+  //method4 transfer the value to backEnd Promise
+  result(data): Promise<any> {
+    //HttpClient
+    const options = { headers: new HttpHeaders({ 'Content-Type':'application/json'})};
+    return this.HttpClient.post('/api/v1/result', data, options)
+      .toPromise()
+      .then(res => {
+        return res;
+      })
+      .catch(this.handleError);
+  }
   private handleError(error: any): Promise<any> {
     return Promise.reject(error.body || error);
   }

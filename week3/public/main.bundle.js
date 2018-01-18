@@ -185,7 +185,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/components/editor/editor.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<section>\n  <header class=\"editor-header\">\n    <div class=\"row\">\n      <select class=\"form-control pull-left lang-select\" name=\"language\"\n              [(ngModel)]=\"language\" (change)=\"setLanguage(language)\">\n        <option *ngFor=\"let language of languages\" [value]=\"language\">\n          {{language}}\n        </option>\n      </select>\n      <!-- Button trigger modal -->\n      <button type=\"button\" class=\"btn btn-primary pull-right\" data-toggle=\"modal\" data-target=\"#myModal\">\n        Reset\n      </button>\n    </div>\n  </header>\n\n\n  <div class=\"modal fade\" id=\"myModal\" tabindex=\"-1\" role=\"dialog\">\n    <div class=\"modal-dialog\" role=\"document\">\n      <div class=\"modal-content\">\n        <div class=\"modal-header\">\n          <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>\n          <h4 class=\"modal-title\">Are you sure</h4>\n        </div>\n        <div class=\"modal-body\">\n          <p>You will lose current code in the editor, are you sure?</p>\n        </div>\n        <div class=\"modal-footer\">\n          <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>\n          <button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\" (click)=\"resetEditor()\">Reset</button>\n        </div>\n      </div><!-- /.modal-content -->\n    </div><!-- /.modal-dialog -->\n  </div><!-- /.modal -->\n\n  <div class=\"row\">\n    <div id=\"editor\"></div>\n  </div>\n\n  <footer class=\"editor-footer\">\n    <button type=\"button\" class=\"btn btn-primary pull-right\" (click)=\"submit()\">Submit Solution</button>\n  </footer>\n\n</section>\n"
+module.exports = "<section>\n  <header class=\"editor-header\">\n    <div class=\"row\">\n      <select class=\"form-control pull-left lang-select\" name=\"language\"\n              [(ngModel)]=\"language\" (change)=\"setLanguage(language)\">\n        <option *ngFor=\"let language of languages\" [value]=\"language\">\n          {{language}}\n        </option>\n      </select>\n      <!-- Button trigger modal -->\n      <button type=\"button\" class=\"btn btn-primary pull-right\" data-toggle=\"modal\" data-target=\"#myModal\">\n        Reset\n      </button>\n    </div>\n  </header>\n\n\n  <div class=\"modal fade\" id=\"myModal\" tabindex=\"-1\" role=\"dialog\">\n    <div class=\"modal-dialog\" role=\"document\">\n      <div class=\"modal-content\">\n        <div class=\"modal-header\">\n          <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>\n          <h4 class=\"modal-title\">Are you sure</h4>\n        </div>\n        <div class=\"modal-body\">\n          <p>You will lose current code in the editor, are you sure?</p>\n        </div>\n        <div class=\"modal-footer\">\n          <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>\n          <button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\" (click)=\"resetEditor()\">Reset</button>\n        </div>\n      </div><!-- /.modal-content -->\n    </div><!-- /.modal-dialog -->\n  </div><!-- /.modal -->\n\n  <div class=\"row\">\n    <div id=\"editor\"></div>\n    <div>\n      {{output}}\n    </div>\n  </div>\n  <footer class=\"editor-footer\">\n    <button type=\"button\" class=\"btn btn-primary pull-right\" (click)=\"submit()\">Submit Solution</button>\n  </footer>\n\n</section>\n"
 
 /***/ }),
 
@@ -207,14 +207,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__("../../../core/esm5/core.js");
 var collaboration_service_1 = __webpack_require__("../../../../../src/app/services/collaboration.service.ts");
 var router_1 = __webpack_require__("../../../router/esm5/router.js");
+var data_service_1 = __webpack_require__("../../../../../src/app/services/data.service.ts");
 var EditorComponent = /** @class */ (function () {
-    function EditorComponent(collaboration, route) {
+    function EditorComponent(collaboration, route, dataService) {
         this.collaboration = collaboration;
         this.route = route;
+        this.dataService = dataService;
         this.languages = ['Java', 'Python'];
         this.language = 'Java';
+        this.output = '';
         this.defaultContent = {
-            'Java': "public class Solution{\n      public static void main(String[] args){\n        // Type your code here\n      }\n    }",
+            'Java': "public class Example{\n      public static void main(String[] args){\n        // Type your code here\n      }\n    }",
             'Python': "class Solution:\n    def example():\n      # Write your code here"
         };
     }
@@ -252,9 +255,18 @@ var EditorComponent = /** @class */ (function () {
         this.language = language;
         this.resetEditor();
     };
+    //once submit execute the code and return the result
     EditorComponent.prototype.submit = function () {
+        var _this = this;
         var userCode = this.editor.getValue();
-        console.log(userCode);
+        var data = {
+            userCodes: userCode,
+            language: this.language
+        };
+        this.dataService.result(data)
+            .then(function (res) {
+            _this.output = res.text;
+        });
     };
     EditorComponent = __decorate([
         core_1.Component({
@@ -263,7 +275,8 @@ var EditorComponent = /** @class */ (function () {
             styles: [__webpack_require__("../../../../../src/app/components/editor/editor.component.css")]
         }),
         __metadata("design:paramtypes", [collaboration_service_1.CollaborationService,
-            router_1.ActivatedRoute])
+            router_1.ActivatedRoute,
+            data_service_1.DataService])
     ], EditorComponent);
     return EditorComponent;
 }());
@@ -657,6 +670,17 @@ var DataService = /** @class */ (function () {
             .toPromise()
             .then(function (res) {
             _this.getProblems();
+            return res;
+        })
+            .catch(this.handleError);
+    };
+    //method4 transfer the value to backEnd Promise
+    DataService.prototype.result = function (data) {
+        //HttpClient
+        var options = { headers: new http_1.HttpHeaders({ 'Content-Type': 'application/json' }) };
+        return this.HttpClient.post('/api/v1/result', data, options)
+            .toPromise()
+            .then(function (res) {
             return res;
         })
             .catch(this.handleError);
