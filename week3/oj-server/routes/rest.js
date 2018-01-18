@@ -9,7 +9,7 @@ const restClient = new nodeRestClient();
 //router.fn('url', (res, req) => {
 // servce.fn().then(problem => res.json(),(error) => {res.status().send()})})
 
-EXECUTOR_SERVER_URL = 'http://localhost:5000/result';
+EXECUTOR_SERVER_URL = 'http://executor/result';
 //registerMethod
 restClient.registerMethod('result', EXECUTOR_SERVER_URL, 'POST');
 

@@ -54,8 +54,10 @@ def build_and_run(code, lang):
     source_file_host_dir = "%s/%s" % (TEMP_BUILD_DIR, source_file_parent_dir_name)
     source_file_guest_dir = "/test/%s" % (source_file_parent_dir_name)
     make_dir(source_file_host_dir)
+    #write file
     with open("%s/%s" % (source_file_host_dir, SOURCE_FILE_NAMES[lang]), 'w') as source_file:
         source_file.write(code)
+    #build
     try:
         client.containers.run(
             image = IMAGE_NAME,
@@ -69,6 +71,7 @@ def build_and_run(code, lang):
         result['build'] = str(e.stderr, 'utf-8')
         shutil.rmtree(source_file_host_dir)
         return result
+    #run
     try:
         log = client.containers.run(
             image = IMAGE_NAME,
@@ -82,5 +85,6 @@ def build_and_run(code, lang):
         result['run'] = str(e.stderr, 'utf-8')
         shutil.rmtree(source_file_host_dir)
         return result
+    #everyTime delete host folder
     shutil.rmtree(source_file_host_dir)
     return result
